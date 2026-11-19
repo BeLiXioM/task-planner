@@ -46,16 +46,13 @@ function renderTasks(){
         const checkbox = document.createElement("input");
         const titleElement = document.createElement("span");
         const deleteButton = document.createElement("button");
+        deleteButton.dataset.action = "delete";
+        deleteButton.dataset.taskId = task.id;
         deleteButton.type = "button";
         deleteButton.textContent = "Удалить";
-        deleteButton.addEventListener("click", () => {
-            deleteTask(task.id);
-        })
+        checkbox.dataset.action = "toggle";
+        checkbox.dataset.taskId = task.id;
         checkbox.type = "checkbox";
-        checkbox.addEventListener("change", () => {
-        task.completed = checkbox.checked;
-        renderTasks();
-        });
         checkbox.checked = task.completed;
         titleElement.textContent = task.title;
         if (task.completed){
@@ -66,6 +63,26 @@ function renderTasks(){
       
     }
 }
+
+taskListElement.addEventListener("click", (event) => {
+  if (event.target.dataset.action === "delete"){
+            deleteTask(event.target.dataset.taskId);
+        }
+});
+
+function setTaskCompleted(taskId, completed){
+    const task = tasks.find(item => item.id === taskId);
+    if (task) {
+  task.completed = completed;
+  renderTasks();
+}
+}
+
+taskListElement.addEventListener("change", (event) => {
+    if (event.target.dataset.action === "toggle"){
+        setTaskCompleted(event.target.dataset.taskId, event.target.checked);
+    }
+})
 
 function countActiveTasks(tasks){
     return tasks.filter(task => !task.completed).length;
