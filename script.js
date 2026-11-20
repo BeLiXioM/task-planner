@@ -5,6 +5,7 @@ const taskTitleInput = document.querySelector("#task-title");
 const taskListElement = document.querySelector("#task-list");
 const taskErrorElement = document.querySelector("#task-error");
 const taskCountElement = document.querySelector("#task-count");
+const taskFilterSelect = document.querySelector("#task-filter");
 
 function handleTaskSubmit(event) {
   event.preventDefault();
@@ -34,15 +35,23 @@ function renderTasks(){
     taskListElement.textContent = "";
 
     taskCountElement.textContent = `Осталось задач: ${countActiveTasks(tasks)}`;
+    const visibleTasks = filterTasks(tasks, taskFilterSelect.value);
 
-    if (tasks.length === 0){
-        const li = document.createElement("li");
-        li.textContent = "Задач пока нет";
-        taskListElement.append(li);
-        return 
-    }
+   if (visibleTasks.length === 0) {
+  const li = document.createElement("li");
 
-    for (const task of tasks){
+  if (tasks.length === 0) {
+    li.textContent = "Задач пока нет";
+  } else {
+    li.textContent = "Нет задач для выбранного фильтра";
+  }
+
+  taskListElement.append(li);
+  return;
+}
+    
+
+    for (const task of visibleTasks){
         const li = document.createElement("li");
         const checkbox = document.createElement("input");
         const titleElement = document.createElement("span");
@@ -64,6 +73,8 @@ function renderTasks(){
       
     }
 }
+
+taskFilterSelect.addEventListener("change", renderTasks);
 
 function isValidTask(task){
   if (task === null || typeof task !== "object"){
@@ -137,11 +148,21 @@ function restoreTasks(){
   }
 }
 
+function filterTasks(tasks, status){
+  if (status === "all"){
+    return tasks;
+  }
+  if (status === "active"){
+    return tasks.filter( task => !task.completed);
+    }
+  if (status === "completed"){
+    return tasks.filter( task => task.completed);
+  }  
+  return tasks;
+  }
+
+
 restoreTasks();
 renderTasks();
-
-console.log(isValidTask(null));
-console.log(isValidTask({ id: "1", title: "Учиться", completed: false }));
-console.log(isValidTask({ id: "2", title: "Повторить JS", completed: "false" }));
 
 taskForm.addEventListener("submit", handleTaskSubmit);
