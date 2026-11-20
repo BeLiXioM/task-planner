@@ -24,6 +24,7 @@ function handleTaskSubmit(event) {
   }
 
   tasks.push(task);
+  saveTasks();
   renderTasks();
   taskTitleInput.value = "";
   taskTitleInput.focus();
@@ -64,6 +65,15 @@ function renderTasks(){
     }
 }
 
+function isValidTask(task){
+  if (task === null || typeof task !== "object"){
+    return false;
+  }
+  else {
+    return typeof task.id === "string" && typeof task.title === "string" && typeof task.completed === "boolean";
+  }
+}
+
 taskListElement.addEventListener("click", (event) => {
   if (event.target.dataset.action === "delete"){
             deleteTask(event.target.dataset.taskId);
@@ -74,6 +84,7 @@ function setTaskCompleted(taskId, completed){
     const task = tasks.find(item => item.id === taskId);
     if (task) {
   task.completed = completed;
+  saveTasks();
   renderTasks();
 }
 }
@@ -92,12 +103,45 @@ function deleteTask(taskId){
      const index = tasks.findIndex(task => task.id === taskId);
      if (index !== -1) {
     tasks.splice(index, 1);
+    saveTasks();
     renderTasks();
   }
 }
 
+function saveTasks(){
+  localStorage.setItem("plannerTasks", JSON.stringify(tasks));
+}
+
+function restoreTasks(){
+  const savedTasksJSON = localStorage.getItem("plannerTasks");
+  if ( savedTasksJSON === null){
+    return;
+  }
+  try {
+    const savedTasks = JSON.parse(savedTasksJSON);
+    if (!Array.isArray(savedTasks)){
+      throw new Error("Ожидался массив задач");
+    }
+    for (const task of savedTasks){
+      if (!isValidTask(task)){
+        throw new Error("Некорректные данные задачи!");
+      }
+    }
+    tasks.length = 0;
+    for (const task of savedTasks){
+      tasks.push(task);
+    }
+  }
+  catch {
+    console.error("Не удалось восстановить задачи");
+  }
+}
+
+restoreTasks();
 renderTasks();
 
-
+console.log(isValidTask(null));
+console.log(isValidTask({ id: "1", title: "Учиться", completed: false }));
+console.log(isValidTask({ id: "2", title: "Повторить JS", completed: "false" }));
 
 taskForm.addEventListener("submit", handleTaskSubmit);
