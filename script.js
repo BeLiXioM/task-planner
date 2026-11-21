@@ -74,7 +74,10 @@ function renderTasks(){
     }
 }
 
-taskFilterSelect.addEventListener("change", renderTasks);
+taskFilterSelect.addEventListener("change", () => {
+  saveTaskFilter();
+  renderTasks();
+});
 
 function isValidTask(task){
   if (task === null || typeof task !== "object"){
@@ -161,7 +164,18 @@ function filterTasks(tasks, status){
   return tasks;
   }
 
+  function saveTaskFilter(){
+    localStorage.setItem("plannerFilter", taskFilterSelect.value);
+  }
 
+  function restoreTaskFilter(){
+    const savedFilter = localStorage.getItem("plannerFilter");
+    if (savedFilter === "all" || savedFilter === "active" || savedFilter === "completed"){
+      taskFilterSelect.value = savedFilter;
+    }
+  }
+
+restoreTaskFilter();
 restoreTasks();
 renderTasks();
 
