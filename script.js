@@ -1,11 +1,15 @@
 const tasks =[];
 
+let editingTaskId = null;
+
 const taskForm = document.querySelector("#task-form");
 const taskTitleInput = document.querySelector("#task-title");
 const taskListElement = document.querySelector("#task-list");
 const taskErrorElement = document.querySelector("#task-error");
 const taskCountElement = document.querySelector("#task-count");
 const taskFilterSelect = document.querySelector("#task-filter");
+const taskSubmitButton = document.querySelector("#task-button");
+const cancelEditButton = document.querySelector("#cancel-edit");
 
 function handleTaskSubmit(event) {
   event.preventDefault();
@@ -18,13 +22,24 @@ function handleTaskSubmit(event) {
 
   taskErrorElement.textContent = "";
 
-  const task = {
+  if (editingTaskId === null){
+    const task = {
     id: crypto.randomUUID(),
     title: title,
     completed: false
   }
+    tasks.push(task);
+  }
+  else {
+    const task = tasks.find(item => item.id === editingTaskId);
+    if (task){
+      task.title = title;
+    }
+  }
+cancelEditButton.hidden = true;
+  editingTaskId = null;
+  taskSubmitButton.textContent = "Добавить";
 
-  tasks.push(task);
   saveTasks();
   renderTasks();
   taskTitleInput.value = "";
@@ -56,6 +71,11 @@ function renderTasks(){
         const checkbox = document.createElement("input");
         const titleElement = document.createElement("span");
         const deleteButton = document.createElement("button");
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "Редактировать";
+        editButton.dataset.action = "edit";
+        editButton.dataset.taskId = task.id;
         deleteButton.dataset.action = "delete";
         deleteButton.dataset.taskId = task.id;
         deleteButton.type = "button";
@@ -68,7 +88,7 @@ function renderTasks(){
         if (task.completed){
             titleElement.classList.add("task-completed");
         }
-        li.append(checkbox, titleElement, deleteButton);
+        li.append(checkbox, titleElement, editButton ,deleteButton);
         taskListElement.append(li);
       
     }
@@ -92,6 +112,9 @@ taskListElement.addEventListener("click", (event) => {
   if (event.target.dataset.action === "delete"){
             deleteTask(event.target.dataset.taskId);
         }
+  else if (event.target.dataset.action === "edit"){
+    startEditing(event.target.dataset.taskId);
+  }      
 });
 
 function setTaskCompleted(taskId, completed){
@@ -116,6 +139,9 @@ function countActiveTasks(tasks){
 function deleteTask(taskId){
      const index = tasks.findIndex(task => task.id === taskId);
      if (index !== -1) {
+      if (taskId === editingTaskId){
+        cancelEditing();
+      }
     tasks.splice(index, 1);
     saveTasks();
     renderTasks();
@@ -174,6 +200,30 @@ function filterTasks(tasks, status){
       taskFilterSelect.value = savedFilter;
     }
   }
+
+  function startEditing(taskId){
+    const task = tasks.find(task => task.id === taskId);
+    if (!task){
+      return;
+    }
+    editingTaskId = task.id;
+    taskTitleInput.value = task.title;
+    taskErrorElement.textContent = "";
+    taskTitleInput.focus();
+    taskSubmitButton.textContent = "Сохранить";
+    cancelEditButton.hidden = false;
+  }
+
+  function cancelEditing(){
+    editingTaskId = null;
+    taskTitleInput.value = "";
+    taskSubmitButton.textContent = "Добавить"
+    taskErrorElement.textContent = "";
+    cancelEditButton.hidden = true;
+    taskTitleInput.focus();
+  }
+  
+  cancelEditButton.addEventListener("click", cancelEditing);
 
 restoreTaskFilter();
 restoreTasks();
