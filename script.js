@@ -10,10 +10,12 @@ const taskCountElement = document.querySelector("#task-count");
 const taskFilterSelect = document.querySelector("#task-filter");
 const taskSubmitButton = document.querySelector("#task-button");
 const cancelEditButton = document.querySelector("#cancel-edit");
+const taskDateInput = document.querySelector("#task-date");
 
 function handleTaskSubmit(event) {
   event.preventDefault();
   const title = taskTitleInput.value.trim();
+  const dueDate = taskDateInput.value;
 
   if (!title) {
     taskErrorElement.textContent = "Введите название задачи";
@@ -26,7 +28,8 @@ function handleTaskSubmit(event) {
     const task = {
     id: crypto.randomUUID(),
     title: title,
-    completed: false
+    completed: false,
+    dueDate: dueDate
   }
     tasks.push(task);
   }
@@ -34,6 +37,7 @@ function handleTaskSubmit(event) {
     const task = tasks.find(item => item.id === editingTaskId);
     if (task){
       task.title = title;
+      task.dueDate = dueDate;
     }
   }
 cancelEditButton.hidden = true;
@@ -43,6 +47,7 @@ cancelEditButton.hidden = true;
   saveTasks();
   renderTasks();
   taskTitleInput.value = "";
+  taskDateInput.value = "";
   taskTitleInput.focus();
 }
 
@@ -72,6 +77,13 @@ function renderTasks(){
         const titleElement = document.createElement("span");
         const deleteButton = document.createElement("button");
         const editButton = document.createElement("button");
+        const dateElement = document.createElement("span");
+        if (task.dueDate){
+          dateElement.textContent = ` Срок: ${task.dueDate}`
+        }
+        else{
+          dateElement.textContent = " Без срока";
+        }
         editButton.type = "button";
         editButton.textContent = "Редактировать";
         editButton.dataset.action = "edit";
@@ -88,8 +100,11 @@ function renderTasks(){
         if (task.completed){
             titleElement.classList.add("task-completed");
         }
-        li.append(checkbox, titleElement, editButton ,deleteButton);
+        li.append(checkbox, titleElement, dateElement, editButton ,deleteButton);
         taskListElement.append(li);
+        if (isTaskOverdue(task)){
+            dateElement.classList.add("task-overdue");
+        }
       
     }
 }
@@ -102,6 +117,9 @@ taskFilterSelect.addEventListener("change", () => {
 function isValidTask(task){
   if (task === null || typeof task !== "object"){
     return false;
+  }
+   if (task.dueDate !== undefined && typeof task.dueDate !== "string"){
+   return false; 
   }
   else {
     return typeof task.id === "string" && typeof task.title === "string" && typeof task.completed === "boolean";
@@ -206,6 +224,12 @@ function filterTasks(tasks, status){
     if (!task){
       return;
     }
+    if (typeof task.dueDate === "string"){
+      taskDateInput.value = task.dueDate;
+    }
+    else{
+      taskDateInput.value = "";
+    }
     editingTaskId = task.id;
     taskTitleInput.value = task.title;
     taskErrorElement.textContent = "";
@@ -217,10 +241,21 @@ function filterTasks(tasks, status){
   function cancelEditing(){
     editingTaskId = null;
     taskTitleInput.value = "";
+    taskDateInput.value = "";
     taskSubmitButton.textContent = "Добавить"
     taskErrorElement.textContent = "";
     cancelEditButton.hidden = true;
     taskTitleInput.focus();
+  }
+
+  function isTaskOverdue(task){
+    if (task.completed || !(task.dueDate)){
+      return false;
+    }
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const deadline = new Date(`${task.dueDate}T00:00:00`);
+    return deadline < today;
   }
   
   cancelEditButton.addEventListener("click", cancelEditing);
