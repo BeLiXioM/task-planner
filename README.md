@@ -31,15 +31,21 @@
 
 ## Локальный запуск
 
-1. Клонировать репозиторий:
+Требуется Node.js 26 LTS и npm.
 
-   ```bash
-   git clone https://github.com/BeLiXioM/task-planner.git
-   ```
+1. Клонировать репозиторий и открыть папку проекта.
+2. Установить зависимости: `npm ci`.
+3. Запустить сервер разработки: `npm run dev`.
+4. Открыть адрес, указанный в терминале.
 
-2. Открыть папку `task-planner` в VS Code.
-3. Установить расширение Live Server.
-4. Нажать правой кнопкой на `index.html` и выбрать **Open with Live Server**.
+В PowerShell при блокировке npm.ps1 используйте npm.cmd вместо npm.
+
+## Сборка и публикация
+
+- `npm run build` — сборка в папку dist.
+- `npm run preview` — локальная проверка сборки.
+- После push в main GitHub Actions автоматически собирает и публикует сайт.
+- node_modules и dist не хранятся в Git.
 
 ## Структура проекта
 
