@@ -91,7 +91,9 @@ function renderTasks(){
         deleteButton.dataset.action = "delete";
         deleteButton.dataset.taskId = task.id;
         deleteButton.type = "button";
-        deleteButton.textContent = "Удалить";
+        const deleteSpan = document.createElement("span");
+        deleteSpan.textContent = "Удалить";
+        deleteButton.append(deleteSpan);
         checkbox.dataset.action = "toggle";
         checkbox.dataset.taskId = task.id;
         checkbox.type = "checkbox";
@@ -127,11 +129,15 @@ function isValidTask(task){
 }
 
 taskListElement.addEventListener("click", (event) => {
-  if (event.target.dataset.action === "delete"){
-            deleteTask(event.target.dataset.taskId);
+  const button = event.target.closest("button[data-action]");
+  if (!button) {
+  return;
+}
+  if (button.dataset.action === "delete"){
+            deleteTask(button.dataset.taskId);
         }
-  else if (event.target.dataset.action === "edit"){
-    startEditing(event.target.dataset.taskId);
+  else if (button.dataset.action === "edit"){
+    startEditing(button.dataset.taskId);
   }      
 });
 
@@ -265,3 +271,10 @@ restoreTasks();
 renderTasks();
 
 taskForm.addEventListener("submit", handleTaskSubmit);
+
+
+taskForm.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && editingTaskId !== null){
+    cancelEditing();
+  }
+});
