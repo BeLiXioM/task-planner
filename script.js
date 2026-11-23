@@ -1,3 +1,6 @@
+import { filterTasks, countActiveTasks, isTaskOverdue } from "./task-utils.js";
+import { saveTasks, restoreTasks} from "./storage.js";
+
 const tasks =[];
 
 let editingTaskId = null;
@@ -44,14 +47,66 @@ cancelEditButton.hidden = true;
   editingTaskId = null;
   taskSubmitButton.textContent = "Добавить";
 
-  saveTasks();
+  saveTasks(tasks);
   renderTasks();
   taskTitleInput.value = "";
   taskDateInput.value = "";
   taskTitleInput.focus();
 }
 
-function renderTasks(){
+
+taskFilterSelect.addEventListener("change", () => {
+  saveTaskFilter();
+  renderTasks();
+});
+
+taskListElement.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) {
+  return;
+}
+  if (button.dataset.action === "delete"){
+            deleteTask(button.dataset.taskId);
+        }
+  else if (button.dataset.action === "edit"){
+    startEditing(button.dataset.taskId);
+  }      
+});
+
+function setTaskCompleted(taskId, completed){
+    const task = tasks.find(item => item.id === taskId);
+    if (task) {
+  task.completed = completed;
+  saveTasks(tasks);
+  renderTasks();
+}
+}
+
+taskListElement.addEventListener("change", (event) => {
+    if (event.target.dataset.action === "toggle"){
+        setTaskCompleted(event.target.dataset.taskId, event.target.checked);
+    }
+})
+
+
+function deleteTask(taskId){
+     const index = tasks.findIndex(task => task.id === taskId);
+     if (index !== -1) {
+      if (taskId === editingTaskId){
+        cancelEditing();
+      }
+    tasks.splice(index, 1);
+    saveTasks(tasks);
+    renderTasks();
+  }
+}
+
+
+  function saveTaskFilter(){
+    localStorage.setItem("plannerFilter", taskFilterSelect.value);
+  }
+
+  function renderTasks(){
     taskListElement.textContent = "";
 
     taskCountElement.textContent = `Осталось задач: ${countActiveTasks(tasks)}`;
@@ -111,112 +166,6 @@ function renderTasks(){
     }
 }
 
-taskFilterSelect.addEventListener("change", () => {
-  saveTaskFilter();
-  renderTasks();
-});
-
-function isValidTask(task){
-  if (task === null || typeof task !== "object"){
-    return false;
-  }
-   if (task.dueDate !== undefined && typeof task.dueDate !== "string"){
-   return false; 
-  }
-  else {
-    return typeof task.id === "string" && typeof task.title === "string" && typeof task.completed === "boolean";
-  }
-}
-
-taskListElement.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-action]");
-  if (!button) {
-  return;
-}
-  if (button.dataset.action === "delete"){
-            deleteTask(button.dataset.taskId);
-        }
-  else if (button.dataset.action === "edit"){
-    startEditing(button.dataset.taskId);
-  }      
-});
-
-function setTaskCompleted(taskId, completed){
-    const task = tasks.find(item => item.id === taskId);
-    if (task) {
-  task.completed = completed;
-  saveTasks();
-  renderTasks();
-}
-}
-
-taskListElement.addEventListener("change", (event) => {
-    if (event.target.dataset.action === "toggle"){
-        setTaskCompleted(event.target.dataset.taskId, event.target.checked);
-    }
-})
-
-function countActiveTasks(tasks){
-    return tasks.filter(task => !task.completed).length;
-}
-
-function deleteTask(taskId){
-     const index = tasks.findIndex(task => task.id === taskId);
-     if (index !== -1) {
-      if (taskId === editingTaskId){
-        cancelEditing();
-      }
-    tasks.splice(index, 1);
-    saveTasks();
-    renderTasks();
-  }
-}
-
-function saveTasks(){
-  localStorage.setItem("plannerTasks", JSON.stringify(tasks));
-}
-
-function restoreTasks(){
-  const savedTasksJSON = localStorage.getItem("plannerTasks");
-  if ( savedTasksJSON === null){
-    return;
-  }
-  try {
-    const savedTasks = JSON.parse(savedTasksJSON);
-    if (!Array.isArray(savedTasks)){
-      throw new Error("Ожидался массив задач");
-    }
-    for (const task of savedTasks){
-      if (!isValidTask(task)){
-        throw new Error("Некорректные данные задачи!");
-      }
-    }
-    tasks.length = 0;
-    for (const task of savedTasks){
-      tasks.push(task);
-    }
-  }
-  catch {
-    console.error("Не удалось восстановить задачи");
-  }
-}
-
-function filterTasks(tasks, status){
-  if (status === "all"){
-    return tasks;
-  }
-  if (status === "active"){
-    return tasks.filter( task => !task.completed);
-    }
-  if (status === "completed"){
-    return tasks.filter( task => task.completed);
-  }  
-  return tasks;
-  }
-
-  function saveTaskFilter(){
-    localStorage.setItem("plannerFilter", taskFilterSelect.value);
-  }
 
   function restoreTaskFilter(){
     const savedFilter = localStorage.getItem("plannerFilter");
@@ -253,21 +202,11 @@ function filterTasks(tasks, status){
     cancelEditButton.hidden = true;
     taskTitleInput.focus();
   }
-
-  function isTaskOverdue(task){
-    if (task.completed || !(task.dueDate)){
-      return false;
-    }
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const deadline = new Date(`${task.dueDate}T00:00:00`);
-    return deadline < today;
-  }
   
   cancelEditButton.addEventListener("click", cancelEditing);
 
 restoreTaskFilter();
-restoreTasks();
+restoreTasks(tasks);
 renderTasks();
 
 taskForm.addEventListener("submit", handleTaskSubmit);
