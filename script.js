@@ -129,16 +129,19 @@ function deleteTask(taskId){
     for (const task of visibleTasks){
         const li = document.createElement("li");
         const checkbox = document.createElement("input");
-        const titleElement = document.createElement("span");
+        const titleElement = document.createElement("label");
         const deleteButton = document.createElement("button");
         const editButton = document.createElement("button");
         const dateElement = document.createElement("span");
+        const actionsElement = document.createElement("div");
         if (task.dueDate){
           dateElement.textContent = ` Срок: ${task.dueDate}`
         }
         else{
           dateElement.textContent = " Без срока";
         }
+        actionsElement.classList.add("task-actions");
+        titleElement.classList.add("task-title");
         editButton.type = "button";
         editButton.textContent = "Редактировать";
         editButton.dataset.action = "edit";
@@ -149,15 +152,19 @@ function deleteTask(taskId){
         const deleteSpan = document.createElement("span");
         deleteSpan.textContent = "Удалить";
         deleteButton.append(deleteSpan);
+        checkbox.id = `task-${task.id}`;
+        titleElement.htmlFor = checkbox.id;
         checkbox.dataset.action = "toggle";
         checkbox.dataset.taskId = task.id;
         checkbox.type = "checkbox";
         checkbox.checked = task.completed;
         titleElement.textContent = task.title;
+        li.classList.add("task-item");
         if (task.completed){
             titleElement.classList.add("task-completed");
         }
-        li.append(checkbox, titleElement, dateElement, editButton ,deleteButton);
+        actionsElement.append(editButton, deleteButton);
+        li.append(checkbox, titleElement, dateElement, actionsElement);
         taskListElement.append(li);
         if (isTaskOverdue(task)){
             dateElement.classList.add("task-overdue");

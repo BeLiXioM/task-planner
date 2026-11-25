@@ -1,3 +1,22 @@
+body{
+  font-family: Arial, sans-serif
+}
+
+button{
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+input[type="text"], input[type="date"], select{
+  padding: 8px;
+}
+
+.planner{
+  max-width: 800px;
+  margin: 32px auto;
+  padding: 16px;
+}
+
 .task-completed {
     text-decoration: line-through;
 }
@@ -5,4 +24,76 @@
 .task-overdue {
   color: #b00020;
   font-weight: bold;
+}
+
+#task-form{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+#task-list{
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item{
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.task-actions{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.task-title {
+  flex: 1 1 200px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.form-actions{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#task-error {
+  color: #b00020;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  box-sizing: border-box;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .task-actions{
+    flex-basis: 100%;
+  }
+
+  .task-actions button {
+    flex: 1;
+  }
 }

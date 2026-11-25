@@ -8,16 +8,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
+<main class="planner">
     <h1>Планировщик задач</h1>
     <form id="task-form">
         <label for="task-title">Новая задача</label>
-        <input id="task-title" type="text"> 
+<input id="task-title" type="text" aria-describedby="task-error">
         <label for="task-date">Срок выполнения</label>
         <input id="task-date" type="date">
-        <p id="task-error"></p>
+        <p id="task-error" aria-live="polite"></p>
+        <div class="form-actions">
         <button id="cancel-edit" type="button" hidden>Отмена</button>
         <button id="task-button" type="submit">Добавить</button>
+        </div>
     </form>
     <label for="task-filter">Показать задачи</label>
     <select id="task-filter">
